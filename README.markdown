@@ -91,3 +91,12 @@ Recipes are named rules for the JIT settings which help improve security and are
 When JIT parses a URL like this, it will check the recipes file for a recipe with a handle of `thumbnail` and apply it's rules. You can completely disable dynamic JIT rules and choose to use recipes only which will prevent a malicious user from hammering your server with large or multiple JIT requests.
 
 Recipes can be copied between installations and changes will be reflected by every image using this recipe.
+
+### Pixel Density
+
+using recipes you can now add a multiplication parameter to the end of the recipe name
+
+eg <img src="{$root}/image/thumbnail**.2**/{image/@path}/{image/filename}" /> for 2x    
+<img src="{$root}/image/thumbnail**.1.5**/{image/@path}/{image/filename}" /> for 1.5x  
+
+
