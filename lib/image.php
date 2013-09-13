@@ -1,6 +1,6 @@
 <?php
 
-	@ini_set('display_errors', 'off');
+	@ini_set('display_errors', 'on');
 	@ini_set("gd.jpeg_ignore_warning", 1);
 
 	define('DOCROOT', rtrim(realpath(dirname(__FILE__) . '/../../../'), '/'));
@@ -29,6 +29,9 @@
 	define_safe('MODE_FIT', 4);
 	define_safe('CACHING', ($settings['image']['cache'] == 1 ? true : false));
 
+
+
+
 	set_error_handler('__errorHandler');
 
 	function processParams($string, &$image_settings){
@@ -46,9 +49,11 @@
 		if(file_exists(WORKSPACE . '/jit-image-manipulation/recipes.php')) include(WORKSPACE . '/jit-image-manipulation/recipes.php');
 
 		if (is_array($recipes) && !empty($recipes)) {
+
 			foreach($recipes as $recipe) {
 				// Is the mode regex? If so, bail early and let not JIT process it.
 				if($recipe['mode'] === 'regex' && preg_match($recipe['url-parameter'], $string)) {
+
 					// change URL to a "normal" JIT URL
 					$string = preg_replace($recipe['url-parameter'], $recipe['jit-parameter'], $string);
 					$is_regex = true;
@@ -59,9 +64,12 @@
 				}
 				// Nope, we're not regex, so make a regex and then check whether we this recipe matches
 				// the URL string. If not, continue to the next recipe.
-				else if(!preg_match('/^' . $recipe['url-parameter'] . '\//i', $string, $matches)) {
+				else if(!preg_match('/^' . $recipe['url-parameter'] . '[\/.]/i', $string, $matches)) {
 					continue;
 				}
+
+				
+		
 
 				// If we're here, the recipe name matches, so we'll go on to fill out the params
 
@@ -71,22 +79,31 @@
 				// Path to file
 				$param->file = substr($string, strlen($recipe['url-parameter']) + 1);
 
+				$multiplier = 1;
+
+
+				if ((float)explode('/', $param->file)[0] == explode('/', $param->file)[0] && explode('/', $param->file)[0] != 0) {
+					$multiplier = (float)explode('/', $param->file)[0];
+					$param->file = strstr($param->file, '/');
+				}
+
+
 				// Set output quality
 				if (!empty($recipe['quality'])) {
 					$image_settings['quality'] = $recipe['quality'];
 				}
 
-				// Specific variables based off mode
-				// 0 is ignored (direct display)
-				// regex is already handled
+
+
+
 				switch ($recipe['mode']) {
 					// Resize
 					case '1':
 					// Resize to fit
 					case '4':
 						$param->mode = (int)$recipe['mode'];
-						$param->width = (int)$recipe['width'];
-						$param->height = (int)$recipe['height'];
+						$param->width = (int)$recipe['width'] * $multiplier;
+						$param->height = (int)$recipe['height'] * $multiplier;
 						break;
 
 					// Resize and crop
@@ -94,12 +111,15 @@
 					// Crop
 					case '3':
 						$param->mode = (int)$recipe['mode'];
-						$param->width = (int)$recipe['width'];
-						$param->height = (int)$recipe['height'];
+						$param->width = (int)$recipe['width'] * $multiplier;
+						$param->height = (int)$recipe['height'] * $multiplier;
 						$param->position = (int)$recipe['position'];
 						$param->background = $recipe['background'];
 						break;
 				}
+
+				$param->width = (int)$param->width;
+				$param->height = (int)$param->height;
 
 				return $param;
 			}
@@ -143,6 +163,8 @@
 			$param->file = $matches[0][2];
 		}
 
+
+
 		return $param;
 	}
 
@@ -172,6 +194,8 @@
 		global $param;
 
 		if(error_reporting() != 0 && in_array($errno, array(E_WARNING, E_USER_WARNING, E_ERROR, E_USER_ERROR))){
+			var_dump("{$errno} - ".strip_tags((is_object($errstr) ? $errstr->generate() : $errstr)).($errfile ? " in file {$errfile}" : '') . ($errline ? " on line {$errline}" : ''), $errno);
+			exit;
 			$Log = new Log(ACTIVITY_LOG);
 			$Log->pushToLog("{$errno} - ".strip_tags((is_object($errstr) ? $errstr->generate() : $errstr)).($errfile ? " in file {$errfile}" : '') . ($errline ? " on line {$errline}" : ''), $errno, true);
 			$Log->pushToLog(
@@ -330,6 +354,8 @@
 		$dst_w = $param->width;
 		$dst_h = $param->height;
 	}
+
+
 
 	// Apply the filter to the Image class (`$image`)
 	switch($param->mode) {
