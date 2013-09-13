@@ -1,4 +1,4 @@
-# JIT Image Manipulation
+# JIT Image Manipulation with retina support images
 
 A simple way to manipulate images "just in time" via the URL. Supports caching, image quality settings and loading of offsite images.
 
