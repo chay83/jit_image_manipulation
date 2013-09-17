@@ -81,9 +81,11 @@
 
 				$multiplier = 1;
 
+				$explode = explode('/', $param->file);
 
-				if (isset((float)explode('/', $param->file)[0]) && (float)explode('/', $param->file)[0] == explode('/', $param->file)[0] && explode('/', $param->file)[0] != 0) {
-					$multiplier = (float)explode('/', $param->file)[0];
+
+				if ((float)$explode[0] == $explode[0] && $explode[0] != 0) {
+					$multiplier = (float)$explode[0];
 					$param->file = strstr($param->file, '/');
 				}
 
